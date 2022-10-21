@@ -10,42 +10,39 @@
 
 int _printf(const char *format, ...)
 {
-	int len = 0, i;
+	int i = 0, count = 0, count_fun;
 	va_list args;
-	t_c func[] = {
-		{"c", c_printf}, {"s", s_printf}, {"i", i_printf},
-		{"d", i_printf}, {"b", b_printf}};
 
-	if (!format || (*format == '%' && *(format + 1) == '\0'))
-		return (-1);
 	va_start(args, format);
-
-	while (*format)
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	while (format[i])
 	{
-		if (*format == '%')
+		count_fun = 0;
+		if (format[i] == '%')
 		{
-			if (f_id(*(format + 1)))
+			if (!format[i + 1] || (format[i + 1] == ' ' && !format[i + 2]))
 			{
-				i = 0;
-				while (*func[i].type)
-				{
-					if (*(format + 1) == *func[i].type)
-					{
-						len += func[i].f(&args);
-						break;
-					}
-					i++;
-				}
+				count = -1;
+				break;
 			}
-			else if (*(format + 1) == '\0')
-				return (-1);
-			format++;
+			count_fun += get_function(format[i + 1], args);
+			if (count_fun == 0)
+				count += _putchar(format[i + 1]);
+			if (count_fun == -1)
+				count = -1;
+			i++;
 		}
 		else
-			len += _putchar(*format);
-		format++;
+		{	
+			(count == -1) ? (_putchar(format[i])) : (count += _putchar(format[i]));
+		}
+		i++;
+		if (count != -1)
+			count += count_fun;
 	}
-
 	va_end(args);
-	return (len);
+	return (count);
 }
